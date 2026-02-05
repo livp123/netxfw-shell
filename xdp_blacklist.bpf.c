@@ -39,12 +39,7 @@ struct {
 #include "mod_ipv4.h"
 #include "mod_ipv6.h"
 
-static __always_inline void count_stats(__u32 key) {
-    __u64 *val = bpf_map_lookup_elem(&stats_map, &key);
-    if (val) {
-        *val += 1;
-    }
-}
+
 
 SEC("xdp")
 int xdp_firewall_shell(struct xdp_md *ctx) {
@@ -56,6 +51,11 @@ int xdp_firewall_shell(struct xdp_md *ctx) {
         return XDP_PASS;
 
     __u16 h_proto = bpf_ntohs(eth->h_proto);
+    
+    // 早期协议验证 - 仅处理 IPv4 和 IPv6
+    if (h_proto != ETH_P_IP && h_proto != ETH_P_IPV6)
+        return XDP_PASS;
+
     int rc = XDP_PASS;
 
     /* 1. 执行模块化逻辑 (带 Fast Path 优化) */
@@ -65,10 +65,18 @@ int xdp_firewall_shell(struct xdp_md *ctx) {
         if (!enabled || *enabled) {
             rc = handle_ipv4(ctx, eth + 1, data_end);
             if (rc == XDP_DROP) {
-                count_stats(STATS_IPV4_DROP);
+                __u32 stat_key = STATS_IPV4_DROP;
+                __u64 *val = bpf_map_lookup_elem(&stats_map, &stat_key);
+                if (val) {
+                    *val += 1;
+                }
                 return XDP_DROP;
             }
-            count_stats(STATS_IPV4_PASS);
+            __u32 stat_key_pass = STATS_IPV4_PASS;
+            __u64 *val_pass = bpf_map_lookup_elem(&stats_map, &stat_key_pass);
+            if (val_pass) {
+                *val_pass += 1;
+            }
         }
     } 
 #ifdef ENABLE_IPV6
@@ -78,16 +86,28 @@ int xdp_firewall_shell(struct xdp_md *ctx) {
         if (!enabled || *enabled) {
             rc = handle_ipv6(ctx, eth + 1, data_end);
             if (rc == XDP_DROP) {
-                count_stats(STATS_IPV6_DROP);
+                __u32 stat_key = STATS_IPV6_DROP;
+                __u64 *val = bpf_map_lookup_elem(&stats_map, &stat_key);
+                if (val) {
+                    *val += 1;
+                }
                 return XDP_DROP;
             }
-            count_stats(STATS_IPV6_PASS);
+            __u32 stat_key_pass = STATS_IPV6_PASS;
+            __u64 *val_pass = bpf_map_lookup_elem(&stats_map, &stat_key_pass);
+            if (val_pass) {
+                *val_pass += 1;
+            }
         }
     }
 #endif
 
-    /* 2. 动态扩展入口 (尾调用) */
-    bpf_tail_call(ctx, &jump_table, PROG_MODULE_CUSTOM1);
+    /* 2. 动态扩展入口 (尾调用) - 仅当有附加模块时才执行 */
+    __u32 tail_call_key = PROG_MODULE_CUSTOM1;
+    __u32 *prog_fd = bpf_map_lookup_elem(&jump_table, &tail_call_key);
+    if (prog_fd) {
+        bpf_tail_call(ctx, &jump_table, PROG_MODULE_CUSTOM1);
+    }
 
     return XDP_PASS;
 }

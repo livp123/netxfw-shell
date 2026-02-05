@@ -124,7 +124,8 @@ static int do_load(const char *ifname, int ipv6_enabled, __u32 max_entries) {
     /* 确保挂载目录干净且存在 */
     char cleanup_cmd[256];
     snprintf(cleanup_cmd, sizeof(cleanup_cmd), "rm -rf %s && mkdir -p %s", PIN_BASE_DIR, PIN_BASE_DIR);
-    system(cleanup_cmd);
+    int ret = system(cleanup_cmd);
+    (void)ret;  // Suppress unused result warning
 
     err = bpf_object__load(obj);
     if (err) {
