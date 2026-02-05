@@ -6,8 +6,11 @@ if ! command -v bpftool &> /dev/null; then
     exit 1
 fi
 
-MAP_V4="/sys/fs/bpf/blacklist_v4"
-MAP_V6="/sys/fs/bpf/blacklist_v6"
+MAP_BASE="/sys/fs/bpf/netxfw-shell"
+MAP_V4="$MAP_BASE/blacklist_v4"
+MAP_V6="$MAP_BASE/blacklist_v6"
+MAP_V4_LPM="$MAP_BASE/blacklist_v4_lpm"
+MAP_V6_LPM="$MAP_BASE/blacklist_v6_lpm"
 
 # 自动定位加载器路径
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -39,6 +42,8 @@ if [ "$1" == "load" ]; then
     exit 0
 elif [ "$1" == "unload" ]; then
     $LOADER unload "$2"
+    echo "正在清理挂载的 BPF Maps..."
+    rm -rf "$MAP_BASE"
     exit 0
 elif [ "$1" == "config" ]; then
     $LOADER config "$2" "$3"
@@ -54,9 +59,9 @@ fi
 if [ "$1" == "flush" ]; then
     echo "正在清空所有黑名单..."
     [ -f "$MAP_V4" ] && bpftool map dump pinned "$MAP_V4" | awk '/key: / {print $2, $3, $4, $5}' | while read -r k; do bpftool map delete pinned "$MAP_V4" key $k; done
-    [ -f "/sys/fs/bpf/blacklist_v4_lpm" ] && bpftool map dump pinned "/sys/fs/bpf/blacklist_v4_lpm" | awk '/key: / {print $2, $3, $4, $5, $6, $7, $8, $9}' | while read -r k; do bpftool map delete pinned "/sys/fs/bpf/blacklist_v4_lpm" key $k; done
+    [ -f "$MAP_V4_LPM" ] && bpftool map dump pinned "$MAP_V4_LPM" | awk '/key: / {print $2, $3, $4, $5, $6, $7, $8, $9}' | while read -r k; do bpftool map delete pinned "$MAP_V4_LPM" key $k; done
     [ -f "$MAP_V6" ] && bpftool map dump pinned "$MAP_V6" | awk '/key: / {print $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' | while read -r k; do bpftool map delete pinned "$MAP_V6" key $k; done
-    [ -f "/sys/fs/bpf/blacklist_v6_lpm" ] && bpftool map dump pinned "/sys/fs/bpf/blacklist_v6_lpm" | awk '/key: / {print $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21}' | while read -r k; do bpftool map delete pinned "/sys/fs/bpf/blacklist_v6_lpm" key $k; done
+    [ -f "$MAP_V6_LPM" ] && bpftool map dump pinned "$MAP_V6_LPM" | awk '/key: / {print $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21}' | while read -r k; do bpftool map delete pinned "$MAP_V6_LPM" key $k; done
     echo "清理完成。"
     exit 0
 fi
@@ -65,12 +70,12 @@ if [ "$1" == "list" ]; then
     echo "--- IPv4 黑名单 (单个) ---"
     [ -f "$MAP_V4" ] && bpftool map dump pinned "$MAP_V4" | grep -v "found 0 elements"
     echo "--- IPv4 黑名单 (网段) ---"
-    [ -f "/sys/fs/bpf/blacklist_v4_lpm" ] && bpftool map dump pinned "/sys/fs/bpf/blacklist_v4_lpm" | grep -v "found 0 elements"
+    [ -f "$MAP_V4_LPM" ] && bpftool map dump pinned "$MAP_V4_LPM" | grep -v "found 0 elements"
     
     echo "--- IPv6 黑名单 (单个) ---"
     [ -f "$MAP_V6" ] && bpftool map dump pinned "$MAP_V6" | grep -v "found 0 elements"
     echo "--- IPv6 黑名单 (网段) ---"
-    [ -f "/sys/fs/bpf/blacklist_v6_lpm" ] && bpftool map dump pinned "/sys/fs/bpf/blacklist_v6_lpm" | grep -v "found 0 elements"
+    [ -f "$MAP_V6_LPM" ] && bpftool map dump pinned "$MAP_V6_LPM" | grep -v "found 0 elements"
     exit 0
 fi
 

@@ -53,7 +53,7 @@ The loader `xdp_loader` supports dynamic configuration of blacklist capacity:
 
 ```bash
 # Quick load using script (default 10240 entries)
-./shell/manage_blacklist.sh load eth0
+./shell/manage_xdp.sh load eth0
 
 # Advanced load: specify interface, IPv6 toggle, and capacity (e.g., 500,000 entries)
 # Format: ./xdp_loader <ifname> [ipv6_on|ipv6_off] [max_entries]
@@ -66,28 +66,28 @@ Supports single IP blocking and CIDR subnet interception:
 
 ```bash
 # Block a single IP
-./shell/manage_blacklist.sh add 1.2.3.4
-./shell/manage_blacklist.sh add 2001:db8::1
+./shell/manage_xdp.sh add 1.2.3.4
+./shell/manage_xdp.sh add 2001:db8::1
 
 # Block an entire subnet (CIDR format)
-./shell/manage_blacklist.sh add 192.168.1.0/24
-./shell/manage_blacklist.sh add 2606:4700::/32
+./shell/manage_xdp.sh add 192.168.1.0/24
+./shell/manage_xdp.sh add 2606:4700::/32
 
 # List current status and rules
-./shell/manage_blacklist.sh list
+./shell/manage_xdp.sh list
 
 # Real-time monitoring of blocked logs
-./shell/manage_blacklist.sh monitor
+./shell/manage_xdp.sh monitor
 
 # Show traffic statistics
-./shell/manage_blacklist.sh stats
+./shell/manage_xdp.sh stats
 
 # Remove a specific rule
-./shell/manage_blacklist.sh del 1.2.3.4
-./shell/manage_blacklist.sh del 192.168.1.0/24
+./shell/manage_xdp.sh del 1.2.3.4
+./shell/manage_xdp.sh del 192.168.1.0/24
 
 # Flush all rules
-./shell/manage_blacklist.sh flush
+./shell/manage_xdp.sh flush
 ```
 
 ### 4. Plugin Management (Dynamic Extension)
@@ -115,7 +115,7 @@ nohup ./shell/nginx_to_xdp.sh &
 Monitor intercepted traffic in real-time via BPF Ring Buffer:
 ```bash
 # Start real-time monitoring
-sudo ./shell/manage_blacklist.sh monitor <interface>
+sudo ./shell/manage_xdp.sh monitor <interface>
 ```
 Displays:
 - Source/Destination IP
@@ -135,14 +135,14 @@ Displays:
 - `mod_ipv4.h`: IPv4 filtering logic.
 - `mod_ipv6.h`: IPv6 filtering logic.
 - `xdp_loader.c`: User-space loader with dynamic Map adjustment.
-- `manage_blacklist.sh`: Wrapper script for CLI operations.
+- `manage_xdp.sh`: Wrapper script for CLI operations.
 - `nginx_to_xdp.sh`: Nginx log analysis and auto-blocking script.
 - `common.h`: Shared definitions between kernel and user space.
 
 ## Unload
 
 ```bash
-./shell/manage_blacklist.sh unload eth0
+./shell/manage_xdp.sh unload eth0
 ```
 
 ## Binary Downloads

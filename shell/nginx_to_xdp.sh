@@ -6,6 +6,10 @@ LOG_FILE="/var/log/nginx/access.log"
 THRESHOLD=5
 WINDOW=10
 
+# 自动定位管理脚本路径
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+MANAGE_SCRIPT="$SCRIPT_DIR/manage_xdp.sh"
+
 if [ ! -f "$LOG_FILE" ]; then
     echo "错误: 未找到 Nginx 日志文件 $LOG_FILE"
     exit 1
@@ -25,6 +29,6 @@ tail -F "$LOG_FILE" | while read line; do
         # 简单实现：直接调用管理脚本
         # 在生产环境建议使用更复杂的计数逻辑 (如 awk 或 redis)
         echo "[$(date)] 检测到攻击行为来自 $IP (状态码 $STATUS), 正在加入黑名单..."
-        /root/netxfw-shell/manage_blacklist.sh add "$IP"
+        "$MANAGE_SCRIPT" add "$IP"
     fi
 done

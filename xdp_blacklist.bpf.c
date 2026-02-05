@@ -50,7 +50,7 @@ static __always_inline void count_stats(__u32 key) {
 }
 
 SEC("xdp")
-int xdp_blacklist_prog(struct xdp_md *ctx) {
+int xdp_firewall_shell(struct xdp_md *ctx) {
     void *data_end = (void *)(long)ctx->data_end;
     void *data = (void *)(long)ctx->data;
 

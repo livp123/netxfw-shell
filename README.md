@@ -53,7 +53,7 @@ make plugins
 
 ```bash
 # 使用脚本快捷加载 (默认 10240 容量)
-./shell/manage_blacklist.sh load eth0
+./shell/manage_xdp.sh load eth0
 
 # 高级加载：指定接口、是否开启 IPv6、黑名单容量 (例如 500,000 条)
 # 参数格式: ./xdp_loader <ifname> [ipv6_on|ipv6_off] [max_entries]
@@ -66,28 +66,28 @@ make plugins
 
 ```bash
 # 封禁单个 IP
-./shell/manage_blacklist.sh add 1.2.3.4
-./shell/manage_blacklist.sh add 2001:db8::1
+./shell/manage_xdp.sh add 1.2.3.4
+./shell/manage_xdp.sh add 2001:db8::1
 
 # 封禁整个网段 (CIDR 格式)
-./shell/manage_blacklist.sh add 192.168.1.0/24
-./shell/manage_blacklist.sh add 2606:4700::/32
+./shell/manage_xdp.sh add 192.168.1.0/24
+./shell/manage_xdp.sh add 2606:4700::/32
 
 # 查看当前状态与列表
-./shell/manage_blacklist.sh list
+./shell/manage_xdp.sh list
 
 # 实时监控拦截日志 (新功能)
-./shell/manage_blacklist.sh monitor
+./shell/manage_xdp.sh monitor
 
 # 查看流量统计信息
-./shell/manage_blacklist.sh stats
+./shell/manage_xdp.sh stats
 
 # 移除特定规则
-./shell/manage_blacklist.sh del 1.2.3.4
-./shell/manage_blacklist.sh del 192.168.1.0/24
+./shell/manage_xdp.sh del 1.2.3.4
+./shell/manage_xdp.sh del 192.168.1.0/24
 
 # 一键清空所有规则
-./shell/manage_blacklist.sh flush
+./shell/manage_xdp.sh flush
 ```
 
 ### 4. 插件化管理 (动态扩展)
@@ -114,7 +114,7 @@ nohup ./shell/nginx_to_xdp.sh &
 项目现在支持通过 BPF Ring Buffer 实时查看被拦截的流量：
 ```bash
 # 启动实时监控
-sudo ./shell/manage_blacklist.sh monitor <interface>
+sudo ./shell/manage_xdp.sh monitor <interface>
 ```
 该功能会显示：
 - 源/目的 IP
@@ -134,14 +134,14 @@ sudo ./shell/manage_blacklist.sh monitor <interface>
 - `mod_ipv4.h`: IPv4 过滤逻辑模块。
 - `mod_ipv6.h`: IPv6 过滤逻辑模块。
 - `xdp_loader.c`: 用户态加载器，支持动态 Map 属性修改。
-- `manage_blacklist.sh`: 综合管理脚本，封装了复杂的命令行操作。
+- `manage_xdp.sh`: 综合管理脚本，封装了复杂的命令行操作。
 - `nginx_to_xdp.sh`: Nginx 日志分析与自动封禁脚本。
 - `common.h`: 内核与用户态共享的枚举和结构体定义。
 
 ## 卸载
 
 ```bash
-./shell/manage_blacklist.sh unload eth0
+./shell/manage_xdp.sh unload eth0
 ```
 
 ## 二进制下载

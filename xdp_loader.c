@@ -13,7 +13,10 @@
 
 #include "common.h"
 
-#define PIN_BASE_DIR "/sys/fs/bpf"
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#define PIN_BASE_DIR "/sys/fs/bpf/netxfw-shell"
 
 static void usage(const char *prog) {
     fprintf(stderr, "用法: %s <action> [args]\n", prog);
@@ -118,13 +121,23 @@ static int do_load(const char *ifname, int ipv6_enabled, __u32 max_entries) {
     }
 
     /* 3. 加载到内核 */
+    /* 确保挂载目录存在 */
+    mkdir(PIN_BASE_DIR, 0755);
+
     err = bpf_object__load(obj);
     if (err) {
         fprintf(stderr, "错误: 无法加载 BPF 对象: %s\n", strerror(-err));
         return -1;
     }
 
-    /* 4. 初始化配置 */
+    /* 4. 挂载所有 Map 到指定目录 */
+    err = bpf_object__pin_maps(obj, PIN_BASE_DIR);
+    if (err) {
+        fprintf(stderr, "错误: 无法挂载 Maps 到 %s: %s\n", PIN_BASE_DIR, strerror(-err));
+        return -1;
+    }
+
+    /* 5. 初始化配置 */
     int settings_fd = bpf_object__find_map_fd_by_name(obj, "settings");
     if (settings_fd >= 0) {
         __u32 key_v4 = SETTING_ENABLE_IPV4;
@@ -139,7 +152,7 @@ static int do_load(const char *ifname, int ipv6_enabled, __u32 max_entries) {
         bpf_map_update_elem(settings_fd, &key_max, &max_entries, BPF_ANY);
     }
 
-    /* 5. 查找程序并尝试多种模式挂载 (HW -> Native -> SKB) */
+    /* 6. 查找程序并尝试多种模式挂载 (HW -> Native -> SKB) */
     prog = xdp_program__from_bpf_obj(obj, "xdp");
     if (!prog) {
         fprintf(stderr, "错误: 找不到 XDP 程序\n");
