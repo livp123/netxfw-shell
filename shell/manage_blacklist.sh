@@ -19,16 +19,18 @@ if [ ! -f "$LOADER" ]; then
 fi
 
 usage() {
-    echo "用法: $0 [add|del|list|flush|stats|config|load|unload] [参数]"
+    echo "用法: $0 [add|del|list|flush|stats|config|load|unload|monitor] [参数]"
     echo "示例:"
-    echo "  $0 load eth0                 # 加载"
+    echo "  $0 load eth0                 # 加载 XDP 程序"
+    echo "  $0 unload eth0               # 卸载 XDP 程序"
     echo "  $0 add 1.2.3.4               # 拦截单个 IP"
     echo "  $0 del 1.2.3.4               # 移除单个 IP"
-    echo "  $0 add 192.168.1.0/24        # 拦截网段"
+    echo "  $0 add 192.168.1.0/24        # 拦截网段 (CIDR)"
     echo "  $0 del 192.168.1.0/24        # 移除网段"
-    echo "  $0 flush                     # 清空所有黑名单"
-    echo "  $0 list                      # 查看列表"
-    echo "  $0 monitor                   # 监控拦截日志"
+    echo "  $0 flush                     # 清空所有黑名单规则"
+    echo "  $0 list                      # 查看当前所有拦截规则"
+    echo "  $0 monitor                   # 实时监控拦截日志"
+    echo "  $0 stats                     # 查看流量统计信息"
     exit 1
 }
 
