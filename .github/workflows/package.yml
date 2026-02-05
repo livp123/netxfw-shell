@@ -26,6 +26,7 @@ jobs:
               pkg-config \
               zlib1g-dev \
               gcc \
+              gcc-multilib \
               zip
 
 
