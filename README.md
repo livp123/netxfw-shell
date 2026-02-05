@@ -1,5 +1,7 @@
 # NetXFW-Shell: 高性能 XDP 动态防火墙
 
+[中文版](README.md) | [English](README_EN.md)
+
 基于 eBPF/XDP 技术实现的轻量级、高性能网络防火墙，支持动态模块化配置、IPv4/IPv6 双栈拦截以及与 Nginx 日志联动的自动化封禁。
 
 ## 核心特性

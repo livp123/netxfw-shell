@@ -14,12 +14,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install BPF build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang llvm libelf-dev libpcap-dev gcc-multilib build-essential \
-                                 libxdp-dev libbpf-dev linux-headers-generic
-
+          sudo apt-get install -y \
+              clang \
+              llvm \
+              libelf-dev \
+              libbpf-dev \
+              gcc \
+              linux-headers-generic \
+              linux-headers-$(uname -r) \
+              gcc-aarch64-linux-gnu
+              
       - name: Build Full Stack (IPv4 + IPv6)
         run: |
           make clean
