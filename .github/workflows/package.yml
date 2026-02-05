@@ -29,7 +29,7 @@ jobs:
               zlib1g-dev \
               gcc \
               gcc-multilib \
-              linux-headers-generic \
+              linux-headers-$(uname -r) \
               zip
 
 

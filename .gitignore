@@ -2,7 +2,7 @@
 *.o
 xdp_loader
 dist/
-
+xdp_blacklist.bpf.o
 # 调试与日志
 *.log
 *.out
