@@ -11,7 +11,6 @@ struct {
     __uint(max_entries, SETTING_MAX);
     __type(key, __u32);
     __type(value, __u32);
-    __uint(pinning, LIBBPF_PIN_BY_NAME);
 } settings SEC(".maps");
 
 /* 尾调用 Map */
@@ -20,7 +19,6 @@ struct {
     __uint(max_entries, PROG_MODULE_MAX);
     __type(key, __u32);
     __type(value, __u32);
-    __uint(pinning, LIBBPF_PIN_BY_NAME);
 } jump_table SEC(".maps");
 
 /* 统计 Map */
@@ -29,7 +27,6 @@ struct {
     __uint(max_entries, STATS_MAX);
     __type(key, __u32);
     __type(value, __u64);
-    __uint(pinning, LIBBPF_PIN_BY_NAME);
 } stats_map SEC(".maps");
 
 /* 拦截日志 Ring Buffer */

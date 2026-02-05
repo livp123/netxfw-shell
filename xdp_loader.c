@@ -121,8 +121,10 @@ static int do_load(const char *ifname, int ipv6_enabled, __u32 max_entries) {
     }
 
     /* 3. 加载到内核 */
-    /* 确保挂载目录存在 */
-    mkdir(PIN_BASE_DIR, 0755);
+    /* 确保挂载目录干净且存在 */
+    char cleanup_cmd[256];
+    snprintf(cleanup_cmd, sizeof(cleanup_cmd), "rm -rf %s && mkdir -p %s", PIN_BASE_DIR, PIN_BASE_DIR);
+    system(cleanup_cmd);
 
     err = bpf_object__load(obj);
     if (err) {
@@ -192,18 +194,29 @@ static int do_unload(const char *ifname) {
     struct xdp_multiprog *mp = xdp_multiprog__get_from_ifindex(ifindex);
     if (!mp) {
         printf("接口 %s 上没有发现 XDP 程序\n", ifname);
-        return 0;
+    } else {
+        int err = xdp_multiprog__detach(mp);
+        xdp_multiprog__close(mp);
+
+        if (err) {
+            fprintf(stderr, "错误: 无法卸载 XDP 程序: %s\n", strerror(-err));
+            return -1;
+        }
+        printf("成功从 %s 卸载 XDP 防火墙\n", ifname);
     }
 
-    int err = xdp_multiprog__detach(mp);
-    xdp_multiprog__close(mp);
-
-    if (err) {
-        fprintf(stderr, "错误: 无法卸载 XDP 程序: %s\n", strerror(-err));
-        return -1;
+    /* 无论接口上是否有程序，都尝试清理挂载目录 */
+    printf("正在清理 BPF Map 挂载目录 %s...\n", PIN_BASE_DIR);
+    
+    /* 遍历并删除目录下的文件 */
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "rm -rf %s", PIN_BASE_DIR);
+    if (system(cmd) == 0) {
+        printf("清理完成。\n");
+    } else {
+        fprintf(stderr, "警告: 无法完全清理 %s，请检查权限。\n", PIN_BASE_DIR);
     }
 
-    printf("成功从 %s 卸载 XDP 防火墙\n", ifname);
     return 0;
 }
 

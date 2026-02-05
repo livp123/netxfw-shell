@@ -15,7 +15,6 @@ struct {
     __uint(max_entries, MAX_BLACKLIST_ENTRIES);
     __type(key, struct ipv6_addr);
     __type(value, __u8);
-    __uint(pinning, LIBBPF_PIN_BY_NAME);
 } blacklist_v6 SEC(".maps");
 
 /* IPv6 网段黑名单 Map (LPM Trie) */
@@ -25,7 +24,6 @@ struct {
     __type(key, struct lpm_v6_key);
     __type(value, __u8);
     __uint(map_flags, BPF_F_NO_PREALLOC);
-    __uint(pinning, LIBBPF_PIN_BY_NAME);
 } blacklist_v6_lpm SEC(".maps");
 
 /* handle_ipv6 逻辑 */
