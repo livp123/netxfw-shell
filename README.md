@@ -117,6 +117,7 @@ sudo ./shell/manage_blacklist.sh monitor <interface>
 - 协议类型 (TCP/UDP/ICMP)
 
 ### 7. 性能优化说明
+- **CI/CD 自动打包**: 通过 GitHub Actions 自动构建并发布两个版本的二进制压缩包（全栈版与仅 IPv4 版），极大简化了分发流程。
 - **智能挂载模式**: 自动尝试三种挂载模式（Offload -> Native -> Generic），失败时自动降级，确保在各种硬件和驱动环境下都能成功运行。
 - **Fast Path**: 程序在主入口处预先判断 IPv4/IPv6 模块是否启用，避免了在禁用模块时的无效 Map 查找。
 - **Per-CPU Stats**: 使用 Per-CPU Array 进行无锁统计，适合高并发场景。
@@ -137,3 +138,10 @@ sudo ./shell/manage_blacklist.sh monitor <interface>
 ```bash
 ./shell/manage_blacklist.sh unload eth0
 ```
+
+## 二进制下载
+项目通过 GitHub Actions 自动构建并发布，您可以在 [Releases](../../releases) 页面下载以下预编译包：
+- **netxfw-fullstack.zip**: 包含 IPv4 和 IPv6 支持。
+- **netxfw-ipv4-only.zip**: 仅包含 IPv4 支持（极致性能）。
+
+每个压缩包内包含：`xdp_loader` (加载器)、`xdp_blacklist.bpf.o` (内核程序) 以及 `shell/` (管理脚本)。
