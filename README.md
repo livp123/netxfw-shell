@@ -79,6 +79,9 @@ make plugins
 # 实时监控拦截日志 (新功能)
 ./shell/manage_blacklist.sh monitor
 
+# 查看流量统计信息
+./shell/manage_blacklist.sh stats
+
 # 移除特定规则
 ./shell/manage_blacklist.sh del 1.2.3.4
 ./shell/manage_blacklist.sh del 192.168.1.0/24

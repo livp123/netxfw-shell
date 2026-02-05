@@ -79,6 +79,9 @@ Supports single IP blocking and CIDR subnet interception:
 # Real-time monitoring of blocked logs
 ./shell/manage_blacklist.sh monitor
 
+# Show traffic statistics
+./shell/manage_blacklist.sh stats
+
 # Remove a specific rule
 ./shell/manage_blacklist.sh del 1.2.3.4
 ./shell/manage_blacklist.sh del 192.168.1.0/24
