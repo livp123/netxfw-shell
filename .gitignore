@@ -1,6 +1,7 @@
 # 编译产物
 *.o
 xdp_loader
+dist/
 
 # 调试与日志
 *.log

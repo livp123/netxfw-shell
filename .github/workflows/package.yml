@@ -1,0 +1,67 @@
+name: Build and Package XDP Firewall
+
+on:
+  push:
+    branches: [ "main" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm libelf-dev libpcap-dev gcc-multilib build-essential \
+                                 libxdp-dev libbpf-dev linux-headers-generic
+
+      - name: Build Full Stack (IPv4 + IPv6)
+        run: |
+          make clean
+          make ENABLE_IPV6=1
+          mkdir -p dist/netxfw-fullstack
+          cp xdp_loader dist/netxfw-fullstack/
+          cp xdp_blacklist.bpf.o dist/netxfw-fullstack/
+          cp -r shell dist/netxfw-fullstack/
+          cp README.md dist/netxfw-fullstack/
+          cd dist && zip -r netxfw-fullstack.zip netxfw-fullstack/
+
+      - name: Build IPv4 Only
+        run: |
+          make clean
+          make ENABLE_IPV6=0
+          mkdir -p dist/netxfw-ipv4-only
+          cp xdp_loader dist/netxfw-ipv4-only/
+          cp xdp_blacklist.bpf.o dist/netxfw-ipv4-only/
+          cp -r shell dist/netxfw-ipv4-only/
+          cp README.md dist/netxfw-ipv4-only/
+          cd dist && zip -r netxfw-ipv4-only.zip netxfw-ipv4-only/
+
+      - name: Upload Full Stack Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: netxfw-fullstack
+          path: dist/netxfw-fullstack.zip
+
+      - name: Upload IPv4 Only Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: netxfw-ipv4-only
+          path: dist/netxfw-ipv4-only.zip
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/netxfw-fullstack.zip
+            dist/netxfw-ipv4-only.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
